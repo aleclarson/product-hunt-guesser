@@ -1,0 +1,107 @@
+{
+  "data": {
+      "goldenKittyHof": {
+          "years": [
+              2024,
+              2023,
+              2022,
+              2021,
+              2020,
+              2019,
+              2018,
+              2017,
+              2016,
+              2015
+          ],
+          "__typename": "GoldenKittyHallOfFame"
+      },
+      "__typename": "Query",
+      "homefeedItems": {
+          "edges": [
+              {
+                  "node": {
+                      "id": "1030108",
+                      "name": "Secure MCP Framework by Arcade.dev",
+                      "slug": "secure-mcp-framework-by-arcade-dev",
+                      "tagline": "Skip migration and launch MCP with built-in Auth",
+                      "hideVotesCount": false,
+                      "redirectToProduct": {
+                          "id": "1119993",
+                          "slug": "secure-mcp-framework",
+                          "__typename": "Product"
+                      },
+                      "product": {
+                          "id": "1119993",
+                          "slug": "secure-mcp-framework",
+                          "__typename": "Product",
+                          "isSubscribed": false
+                      },
+                      "thumbnailImageUuid": "ae317978-287f-42a9-8101-f6e8433821b5.png",
+                      "productState": "default",
+                      "__typename": "Post",
+                      "hasVoted": false,
+                      "latestScore": 280,
+                      "launchDayScore": 260,
+                      "disabledWhenScheduled": true,
+                      "featuredAt": "2025-11-07T00:01:00-08:00",
+                      "updatedAt": "2025-11-27T04:43:10-08:00",
+                      "createdAt": "2025-11-07T00:01:00-08:00",
+                      "embargoPreviewAt": null,
+                      "scheduledAt": "2025-11-07T00:01:00-08:00",
+                      "isSubscribed": false,
+                      "featuredComment": null,
+                      "shortenedUrl": "/r/p/1030108",
+                      "dailyRank": "3",
+                      "weeklyRank": "23",
+                      "monthlyRank": "87",
+                      "commentsCount": 51,
+                      "friendVoters": {
+                          "edges": [],
+                          "totalCount": 0,
+                          "__typename": "UserConnection"
+                      },
+                      "topics": {
+                          "edges": [
+                              {
+                                  "node": {
+                                      "id": "89",
+                                      "slug": "open-source",
+                                      "name": "Open Source",
+                                      "__typename": "Topic"
+                                  },
+                                  "__typename": "TopicEdge"
+                              },
+                              {
+                                  "node": {
+                                      "id": "267",
+                                      "slug": "developer-tools",
+                                      "name": "Developer Tools",
+                                      "__typename": "Topic"
+                                  },
+                                  "__typename": "TopicEdge"
+                              },
+                              {
+                                  "node": {
+                                      "id": "268",
+                                      "slug": "artificial-intelligence",
+                                      "name": "Artificial Intelligence",
+                                      "__typename": "Topic"
+                                  },
+                                  "__typename": "TopicEdge"
+                              }
+                          ],
+                          "__typename": "TopicConnection"
+                      }
+                  },
+                  "__typename": "HomefeedItemEdge"
+              }
+          ],
+          "pageInfo": {
+              "endCursor": "UG9zdDpNelE6Mw",
+              "hasNextPage": true,
+              "__typename": "PageInfo"
+          },
+          "__typename": "HomefeedItemConnection"
+      }
+  }
+}

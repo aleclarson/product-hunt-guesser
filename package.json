@@ -1,0 +1,10 @@
+{
+  "name": "ProductHuntGuesser",
+  "dependencies": {
+    "idb-kv": "^2.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.1",
+    "typescript": "^5.9.3"
+  }
+}
