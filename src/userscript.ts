@@ -260,13 +260,35 @@ function deriveOptions(latestScore: number): GuessOption[] {
 
     const higher = options[violationIndex];
     const lower = options[violationIndex - 1];
+    const requiredMin = lower.value * 2;
 
-    if (!higher.isCorrect) {
-      higher.value = rollRangeValue(higher.rangeIndex, latestScore);
-    } else if (!lower.isCorrect) {
-      lower.value = rollRangeValue(lower.rangeIndex, latestScore);
+    const higherRange = RANGE_DEFINITIONS[higher.rangeIndex];
+    const lowerRange = RANGE_DEFINITIONS[lower.rangeIndex];
+
+    const canRaiseHigher =
+      !higher.isCorrect &&
+      Math.max(requiredMin, higherRange.min) <= higherRange.max;
+    const canLowerLower = !lower.isCorrect;
+
+    if (canRaiseHigher) {
+      const min = Math.max(requiredMin, higherRange.min);
+      const max = higherRange.max;
+      higher.value = rollRangeValue(higher.rangeIndex, latestScore, min, max);
+    } else if (canLowerLower) {
+      const maxLower = Math.min(lowerRange.max, Math.floor(higher.value / 2));
+      const minLower = lowerRange.min;
+      lower.value = rollRangeValue(
+        lower.rangeIndex,
+        latestScore,
+        minLower,
+        Math.max(minLower, maxLower)
+      );
     } else {
-      higher.value = rollRangeValue(higher.rangeIndex, latestScore);
+      // Fallback: clamp higher up to the minimum allowed within its range
+      higher.value = Math.min(
+        higherRange.max,
+        Math.max(requiredMin, higherRange.min)
+      );
     }
 
     guard += 1;
@@ -286,12 +308,21 @@ function deriveOptions(latestScore: number): GuessOption[] {
     }));
 }
 
-function rollRangeValue(rangeIndex: number, latestScore: number) {
+function rollRangeValue(
+  rangeIndex: number,
+  latestScore: number,
+  minOverride?: number,
+  maxOverride?: number
+) {
   const range = RANGE_DEFINITIONS[rangeIndex];
-  let candidate = randomInt(range.min, range.max);
+  const min = Math.max(range.min, minOverride ?? range.min);
+  const max = Math.min(range.max, maxOverride ?? range.max);
+  if (min > max) return max;
+
+  let candidate = randomInt(min, max);
   let guard = 0;
   while (candidate === latestScore && guard < 20) {
-    candidate = randomInt(range.min, range.max);
+    candidate = randomInt(min, max);
     guard += 1;
   }
   return candidate;
