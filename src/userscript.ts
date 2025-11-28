@@ -49,10 +49,43 @@ function whenReady(cb: () => void | Promise<void>) {
   window.addEventListener("DOMContentLoaded", () => void cb(), { once: true });
 }
 
+async function waitForElement(
+  selector: string,
+  timeoutMs = 10000
+): Promise<Element | null> {
+  const existing = document.querySelector(selector);
+  if (existing) return existing;
+
+  return new Promise((resolve) => {
+    let done = false;
+    let observer: MutationObserver | null = null;
+
+    const timeout = window.setTimeout(() => {
+      if (done) return;
+      done = true;
+      observer?.disconnect();
+      resolve(null);
+    }, timeoutMs);
+
+    observer = new MutationObserver(() => {
+      if (done) return;
+      const found = document.querySelector(selector);
+      if (!found) return;
+      done = true;
+      window.clearTimeout(timeout);
+      observer?.disconnect();
+      resolve(found);
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
+
 function isLaunchPage(url: string): boolean {
-  return /^https:\/\/www\.producthunt\.com\/products\/[^/]+\/launches\/[^/]+/.test(
-    url
-  );
+  return /producthunt\.com\/products\/[^/]+\/launches\/[^/]+/.test(url);
 }
 
 function parseLatestScoreFromButton(button: Element | null): number {
@@ -475,7 +508,18 @@ function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (maxInt - minInt + 1)) + minInt;
 }
 
-function preparePage() {
+async function preparePage() {
+  const archivedSection = await waitForElement(
+    'section[data-test="post-archived-review-card"]',
+    15000
+  );
+  if (!archivedSection) {
+    console.warn(
+      "[ProductHuntGuesser] Timed out waiting for archived review card."
+    );
+    return;
+  }
+
   const voteButton = document.querySelector('button[data-test="vote-button"]');
   const latestScore = parseLatestScoreFromButton(voteButton);
   voteButton?.remove();
