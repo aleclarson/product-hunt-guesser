@@ -1,4 +1,5 @@
 import Idbkv from "idb-kv";
+import { getWeek } from "date-fns";
 
 type HomefeedItem = {
   slug: string;
@@ -464,9 +465,12 @@ async function handleNextClick(button: HTMLButtonElement) {
 
 function pickRandomCoordinates() {
   const currentYear = new Date().getFullYear();
+  const year = randomInt(2022, currentYear);
+  const maxWeek = year === currentYear ? getWeek(new Date()) : 52;
+
   return {
-    year: randomInt(2022, currentYear),
-    week: randomInt(1, 52),
+    year,
+    week: randomInt(1, maxWeek),
     page: randomInt(1, 15),
   };
 }
