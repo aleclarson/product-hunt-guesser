@@ -1,10 +1,16 @@
 {
-  "name": "ProductHuntGuesser",
+  "name": "product-hunt-guesser",
+  "private": true,
   "dependencies": {
     "idb-kv": "^2.2.0"
   },
   "devDependencies": {
     "prettier": "^3.7.1",
+    "radashi": "^12.7.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "tsup"
   }
 }
