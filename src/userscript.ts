@@ -31,6 +31,12 @@ const RANGE_DEFINITIONS = [
 ];
 
 const store = new Idbkv(STORE_NAME);
+let hideLoopId: number | null = null;
+let pageReady = false;
+let hoverOverlay: {
+  container: HTMLDivElement;
+  image: HTMLImageElement;
+} | null = null;
 
 const numberFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 0,
@@ -83,6 +89,28 @@ async function waitForElement(
   });
 }
 
+function startHidingPostItems() {
+  if (hideLoopId !== null) return;
+
+  const tick = () => {
+    if (pageReady) {
+      hideLoopId = null;
+      return;
+    }
+
+    const nodes = document.querySelectorAll<HTMLElement>(
+      '[data-test^="post-item-"]'
+    );
+    if (nodes.length) {
+      nodes.forEach((node) => node.remove());
+    }
+
+    hideLoopId = window.requestAnimationFrame(tick);
+  };
+
+  hideLoopId = window.requestAnimationFrame(tick);
+}
+
 function isLaunchPage(url: string): boolean {
   return /producthunt\.com\/products\/[^/]+\/launches\/[^/]+/.test(url);
 }
@@ -93,6 +121,81 @@ function removeNodesFromHere(node: Element | null) {
     node.remove();
     node = next;
   }
+}
+
+function ensureHoverOverlay() {
+  if (hoverOverlay) return hoverOverlay;
+
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.inset = "0";
+  container.style.pointerEvents = "none";
+  container.style.zIndex = "2147483647";
+  container.style.display = "none";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "center";
+  container.style.padding = "16px";
+  container.style.background = "transparent";
+
+  const image = document.createElement("img");
+  image.style.maxWidth = "100vw";
+  image.style.maxHeight = "100vh";
+  image.style.objectFit = "contain";
+  image.style.boxShadow = "0 20px 40px rgba(0,0,0,0.35)";
+  image.style.borderRadius = "12px";
+
+  container.append(image);
+  document.body.append(container);
+
+  hoverOverlay = { container, image };
+  return hoverOverlay;
+}
+
+function showHoverOverlay(src: string) {
+  const { container, image } = ensureHoverOverlay();
+  image.src = src;
+  container.style.display = "flex";
+}
+
+function hideHoverOverlay() {
+  if (!hoverOverlay) return;
+  hoverOverlay.image.src = "";
+  hoverOverlay.container.style.display = "none";
+}
+
+function upgradeImageSrc(src: string) {
+  try {
+    const url = new URL(src, window.location.href);
+    url.searchParams.set("w", "1100");
+    url.searchParams.set("h", "658");
+    url.searchParams.set("dpr", "2");
+    return url.toString();
+  } catch {
+    return src;
+  }
+}
+
+function enhanceSnapImages() {
+  const images =
+    document.querySelectorAll<HTMLImageElement>("section.snap-x img");
+  images.forEach((img) => {
+    if (img.dataset.phgEnhanced === "1") return;
+    const upgraded = upgradeImageSrc(img.currentSrc || img.src);
+    if (upgraded) {
+      img.src = upgraded;
+    }
+
+    img.addEventListener("mouseenter", () => showHoverOverlay(upgraded));
+    img.addEventListener("mouseleave", () => hideHoverOverlay());
+    img.dataset.phgEnhanced = "1";
+  });
+}
+
+function removeBadgeImages() {
+  const badges = document.querySelectorAll<HTMLImageElement>(
+    'img[src*="ph-static.imgix.net/badges"]'
+  );
+  badges.forEach((img) => img.remove());
 }
 
 function deriveOptions(latestScore: number): GuessOption[] {
@@ -333,7 +436,7 @@ function pickRandomCoordinates() {
   return {
     year: randomInt(2022, currentYear),
     week: randomInt(1, 52),
-    page: randomInt(1, 10),
+    page: randomInt(1, 15),
   };
 }
 
@@ -426,38 +529,50 @@ function randomInt(min: number, max: number) {
 }
 
 async function preparePage() {
-  const archivedSection = await waitForElement(
-    'section[data-test="post-archived-review-card"]',
-    15000
-  );
-  if (!archivedSection) {
-    console.warn(
-      "[ProductHuntGuesser] Timed out waiting for archived review card."
+  try {
+    const archivedSection = await waitForElement(
+      'section[data-test="post-archived-review-card"]',
+      15000
     );
-    return;
+    if (!archivedSection) {
+      console.warn(
+        "[ProductHuntGuesser] Timed out waiting for archived review card."
+      );
+      return;
+    }
+
+    const voteButton = document.querySelector(
+      'button[data-test="vote-button"]'
+    );
+    if (!voteButton) {
+      console.warn("[ProductHuntGuesser] Unable to find vote button.");
+      return;
+    }
+
+    const latestScore = +voteButton.textContent.replace(/\D/g, "");
+    if (Number.isNaN(latestScore)) {
+      console.warn("[ProductHuntGuesser] Unable to parse latest score.");
+      return;
+    }
+
+    // Makers often buy fake votes. Subtract 25 to better reflect the actual score.
+    const adjustedScore = latestScore > 25 ? latestScore - 25 : latestScore;
+
+    const guessUI = buildGuessUI(adjustedScore);
+    archivedSection.before(guessUI);
+
+    voteButton.remove();
+    removeNodesFromHere(archivedSection);
+    enhanceSnapImages();
+    removeBadgeImages();
+  } finally {
+    pageReady = true;
   }
-
-  const voteButton = document.querySelector('button[data-test="vote-button"]');
-  if (!voteButton) {
-    console.warn("[ProductHuntGuesser] Unable to find vote button.");
-    return;
-  }
-
-  const latestScore = +voteButton.textContent.replace(/\D/g, "");
-  if (Number.isNaN(latestScore)) {
-    console.warn("[ProductHuntGuesser] Unable to parse latest score.");
-    return;
-  }
-
-  const guessUI = buildGuessUI(latestScore);
-  archivedSection.before(guessUI);
-
-  voteButton.remove();
-  removeNodesFromHere(archivedSection);
 }
 
 function main() {
   if (!isLaunchPage(window.location.href)) return;
+  startHidingPostItems();
   whenReady(preparePage);
 }
 
