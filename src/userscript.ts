@@ -20,7 +20,6 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const GRAPHQL_URL = "https://www.producthunt.com/frontend/graphql";
 const LEADERBOARD_HASH =
   "74a5405972fc0b6a8e704d6970968116d8fb6021db27d95bad59f376bbba12d4";
-const OPTION_COUNT = 6;
 const RANGE_DEFINITIONS = [
   { min: 0, max: 20 },
   { min: 21, max: 60 },
@@ -88,192 +87,111 @@ function isLaunchPage(url: string): boolean {
   return /producthunt\.com\/products\/[^/]+\/launches\/[^/]+/.test(url);
 }
 
-function parseLatestScoreFromButton(button: Element | null): number {
-  if (!button?.textContent) return 0;
-
-  const match = button.textContent.replace(/\u00a0/g, " ").match(/([\d.,]+)/);
-  if (!match) return 0;
-
-  const digits = match[1].replace(/[^\d]/g, "");
-  const parsed = Number.parseInt(digits, 10);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function removeArchivedSection() {
-  const archivedCard = document.querySelector<HTMLElement>(
-    'section[data-test="post-archived-review-card"]'
-  );
-  let node: HTMLElement | null | undefined = archivedCard;
+function removeNodesFromHere(node: Element | null) {
   while (node) {
-    const next = node.nextElementSibling as HTMLElement | null;
+    const next = node.nextElementSibling as Element | null;
     node.remove();
     node = next;
   }
 }
 
 function deriveOptions(latestScore: number): GuessOption[] {
-  const baseCandidates = RANGE_DEFINITIONS.map((range) =>
-    Math.floor((range.min + range.max) / 2)
+  const targetRangeIndex = RANGE_DEFINITIONS.findIndex(
+    (range) => latestScore >= range.min && latestScore <= range.max
   );
-  const targetRangeIndex =
-    RANGE_DEFINITIONS.findIndex(
-      (range) => latestScore >= range.min && latestScore <= range.max
-    ) ?? -1;
   const effectiveIndex =
     targetRangeIndex >= 0 ? targetRangeIndex : RANGE_DEFINITIONS.length - 1;
 
-  baseCandidates[effectiveIndex] = latestScore;
+  const dropFirstDistance = Math.abs(effectiveIndex - 0);
+  const dropLastDistance = Math.abs(
+    effectiveIndex - (RANGE_DEFINITIONS.length - 1)
+  );
+  const dropIndex =
+    dropFirstDistance > dropLastDistance ? 0 : RANGE_DEFINITIONS.length - 1;
 
-  const uniqueCandidates = Array.from(new Set(baseCandidates));
-  const removed: number[] = [];
+  const selectedRangeIndexes = RANGE_DEFINITIONS.map((_, idx) => idx).filter(
+    (idx) => idx !== dropIndex
+  );
 
-  const spaced = enforceSpacing(uniqueCandidates, latestScore, removed);
+  type OptionCandidate = {
+    value: number;
+    isCorrect: boolean;
+    rangeIndex: number;
+  };
 
-  const trimmed = trimToSize(spaced, latestScore, OPTION_COUNT, removed);
-  const padded = padOptions(trimmed, latestScore, OPTION_COUNT, removed);
+  const buildOption = (rangeIndex: number): OptionCandidate => {
+    const range = RANGE_DEFINITIONS[rangeIndex];
+    const inRange =
+      latestScore >= range.min &&
+      (rangeIndex === RANGE_DEFINITIONS.length - 1
+        ? latestScore >= range.min
+        : latestScore <= range.max);
 
-  return padded
-    .sort((a, b) => a - b)
-    .map((value) => ({ value, isCorrect: value === latestScore }));
-}
-
-function enforceSpacing(
-  values: number[],
-  correctValue: number,
-  removed: number[]
-) {
-  const sorted = [...values].sort((a, b) => a - b);
-  const result: number[] = [];
-
-  for (const value of sorted) {
-    const last = result[result.length - 1];
-    if (last === undefined || value >= last * 2) {
-      result.push(value);
-      continue;
+    if (inRange) {
+      return { value: latestScore, isCorrect: true, rangeIndex };
     }
 
-    const lastIsCorrect = last === correctValue;
-    const currentIsCorrect = value === correctValue;
+    return {
+      value: rollRangeValue(rangeIndex, latestScore),
+      isCorrect: false,
+      rangeIndex,
+    };
+  };
 
-    if (currentIsCorrect && lastIsCorrect) {
-      continue;
+  const options: OptionCandidate[] = selectedRangeIndexes.map((idx) =>
+    buildOption(idx)
+  );
+
+  let guard = 0;
+  while (true) {
+    options.sort((a, b) => a.value - b.value);
+    let violationIndex = -1;
+    for (let i = 1; i < options.length; i += 1) {
+      if (options[i].value < options[i - 1].value * 2) {
+        violationIndex = i;
+        break;
+      }
     }
 
-    if (currentIsCorrect) {
-      removed.push(last);
-      result[result.length - 1] = value;
-      continue;
-    }
+    if (violationIndex === -1) break;
 
-    if (lastIsCorrect) {
-      removed.push(value);
-      continue;
-    }
+    const higher = options[violationIndex];
+    const lower = options[violationIndex - 1];
 
-    const dropCurrent =
-      Math.abs(value - correctValue) >= Math.abs(last - correctValue);
-    if (dropCurrent) {
-      removed.push(value);
+    if (!higher.isCorrect) {
+      higher.value = rollRangeValue(higher.rangeIndex, latestScore);
+    } else if (!lower.isCorrect) {
+      lower.value = rollRangeValue(lower.rangeIndex, latestScore);
     } else {
-      removed.push(last);
-      result[result.length - 1] = value;
+      higher.value = rollRangeValue(higher.rangeIndex, latestScore);
     }
-  }
 
-  return result;
-}
-
-function trimToSize(
-  values: number[],
-  correctValue: number,
-  desired: number,
-  removed: number[]
-) {
-  const list = [...values];
-  while (list.length > desired) {
-    const candidates = list.filter((value) => value !== correctValue);
-    if (!candidates.length) break;
-
-    const farthest = candidates.reduce(
-      (current, value) => {
-        if (current === null) return value;
-        return Math.abs(value - correctValue) > Math.abs(current - correctValue)
-          ? value
-          : current;
-      },
-      null as number | null
-    );
-
-    if (farthest === null) break;
-
-    const index = list.indexOf(farthest);
-    if (index >= 0) {
-      removed.push(farthest);
-      list.splice(index, 1);
-    } else {
+    guard += 1;
+    if (guard > 500) {
+      console.warn(
+        "[ProductHuntGuesser] Unable to space options after many attempts."
+      );
       break;
     }
   }
-  return list;
+
+  return options
+    .sort((a, b) => a.value - b.value)
+    .map((option) => ({
+      value: option.value,
+      isCorrect: option.isCorrect,
+    }));
 }
 
-function padOptions(
-  values: number[],
-  correctValue: number,
-  desired: number,
-  removed: number[]
-) {
-  const list = [...values].sort((a, b) => a - b);
-  const pending = [...removed].sort(
-    (a, b) => Math.abs(a - correctValue) - Math.abs(b - correctValue)
-  );
-
-  for (const candidate of pending) {
-    if (list.length >= desired) break;
-    if (canInsertWithSpacing(list, candidate)) {
-      list.push(candidate);
-      list.sort((a, b) => a - b);
-    }
+function rollRangeValue(rangeIndex: number, latestScore: number) {
+  const range = RANGE_DEFINITIONS[rangeIndex];
+  let candidate = randomInt(range.min, range.max);
+  let guard = 0;
+  while (candidate === latestScore && guard < 20) {
+    candidate = randomInt(range.min, range.max);
+    guard += 1;
   }
-
-  const maxAllowed = Math.max(
-    RANGE_DEFINITIONS[RANGE_DEFINITIONS.length - 1].max,
-    correctValue
-  );
-
-  while (list.length < desired) {
-    const smallest = list[0];
-    const largest = list[list.length - 1];
-
-    const newLow = Math.max(1, Math.floor(smallest / 2));
-    if (canInsertWithSpacing(list, newLow)) {
-      list.push(newLow);
-      list.sort((a, b) => a - b);
-      continue;
-    }
-
-    const proposedHigh = Math.min(
-      maxAllowed,
-      Math.max(largest * 2, largest + 1)
-    );
-    if (canInsertWithSpacing(list, proposedHigh)) {
-      list.push(proposedHigh);
-      list.sort((a, b) => a - b);
-      continue;
-    }
-
-    break;
-  }
-
-  return list;
-}
-
-function canInsertWithSpacing(values: number[], candidate: number) {
-  const withCandidate = [...values, candidate].sort((a, b) => a - b);
-  for (let i = 1; i < withCandidate.length; i += 1) {
-    if (withCandidate[i] < withCandidate[i - 1] * 2) return false;
-  }
-  return true;
+  return candidate;
 }
 
 function buildGuessUI(latestScore: number) {
@@ -386,8 +304,7 @@ function buildGuessUI(latestScore: number) {
   container.append(grid);
   container.append(status);
 
-  const host = document.querySelector("main") ?? document.body;
-  host.prepend(container);
+  return container;
 }
 
 async function handleNextClick(button: HTMLButtonElement) {
@@ -521,11 +438,22 @@ async function preparePage() {
   }
 
   const voteButton = document.querySelector('button[data-test="vote-button"]');
-  const latestScore = parseLatestScoreFromButton(voteButton);
-  voteButton?.remove();
+  if (!voteButton) {
+    console.warn("[ProductHuntGuesser] Unable to find vote button.");
+    return;
+  }
 
-  removeArchivedSection();
-  buildGuessUI(latestScore);
+  const latestScore = +voteButton.textContent.replace(/\D/g, "");
+  if (Number.isNaN(latestScore)) {
+    console.warn("[ProductHuntGuesser] Unable to parse latest score.");
+    return;
+  }
+
+  const guessUI = buildGuessUI(latestScore);
+  archivedSection.before(guessUI);
+
+  voteButton.remove();
+  removeNodesFromHere(archivedSection);
 }
 
 function main() {
