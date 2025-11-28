@@ -1,0 +1,506 @@
+{
+  "data": {
+      "post": {
+          "id": "12079",
+          "isArchived": true,
+          "trashedAt": null,
+          "product": {
+              "id": "111459",
+              "slug": "grammarly",
+              "name": "Grammarly",
+              "postsCount": 10,
+              "__typename": "Product",
+              "isTopProduct": false,
+              "isSubscribed": false,
+              "tagline": "Make your communication clear and effective, wherever you write",
+              "reviewsRating": 4.72,
+              "logoUuid": "f90256e4-05c1-4fcb-8cb5-632af7923ae9.png",
+              "isNoLongerOnline": false,
+              "followersCount": 618,
+              "isMaker": false,
+              "proConTags": [
+                  {
+                      "id": "3318",
+                      "name": "grammar and style checking",
+                      "type": "Positive",
+                      "count": 25,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3323",
+                      "name": "writing style improvement",
+                      "type": "Positive",
+                      "count": 18,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3319",
+                      "name": "AI-powered assistance",
+                      "type": "Positive",
+                      "count": 10,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3320",
+                      "name": "convenient interface",
+                      "type": "Positive",
+                      "count": 9,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3322",
+                      "name": "spelling and punctuation correction",
+                      "type": "Positive",
+                      "count": 9,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "2346",
+                      "name": "browser integration",
+                      "type": "Positive",
+                      "count": 8,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3325",
+                      "name": "clarity improvement",
+                      "type": "Positive",
+                      "count": 8,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "25",
+                      "name": "free tier",
+                      "type": "Positive",
+                      "count": 7,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3329",
+                      "name": "intrusive suggestions",
+                      "type": "Negative",
+                      "count": 7,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "1317",
+                      "name": "cross-platform compatibility",
+                      "type": "Positive",
+                      "count": 6,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3321",
+                      "name": "real-time suggestions",
+                      "type": "Positive",
+                      "count": 5,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3330",
+                      "name": "sentence structure improvement",
+                      "type": "Positive",
+                      "count": 3,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3326",
+                      "name": "tone detection",
+                      "type": "Positive",
+                      "count": 3,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3331",
+                      "name": "vocabulary enhancement",
+                      "type": "Positive",
+                      "count": 3,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3327",
+                      "name": "plagiarism checker",
+                      "type": "Positive",
+                      "count": 2,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3324",
+                      "name": "convenient interface",
+                      "type": "Negative",
+                      "count": 1,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3328",
+                      "name": "CPU and GPU usage",
+                      "type": "Negative",
+                      "count": 1,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "3332",
+                      "name": "Google Docs support",
+                      "type": "Negative",
+                      "count": 1,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "2462",
+                      "name": "limited language support",
+                      "type": "Negative",
+                      "count": 1,
+                      "__typename": "ReviewAiProConTag"
+                  },
+                  {
+                      "id": "1105",
+                      "name": "price",
+                      "type": "Negative",
+                      "count": 1,
+                      "__typename": "ReviewAiProConTag"
+                  }
+              ],
+              "reviewQuestions": [
+                  {
+                      "id": "116148",
+                      "category": "Quality",
+                      "question": "How accurate are grammar and style suggestions in practice?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116149",
+                      "category": "Writing Style",
+                      "question": "Does it improve clarity without changing my voice?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116150",
+                      "category": "Tone",
+                      "question": "How well does tone detection match my intent?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116151",
+                      "category": "UX",
+                      "question": "How intrusive are real-time suggestions while writing?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116152",
+                      "category": "Performance",
+                      "question": "Does it slow down my browser or apps?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116153",
+                      "category": "Compatibility",
+                      "question": "Which platforms and editors does it integrate with?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116154",
+                      "category": "Docs Support",
+                      "question": "Is Google Docs support reliable for longer documents?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116155",
+                      "category": "Academic",
+                      "question": "How effective is the plagiarism checker for academic work?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116156",
+                      "category": "Pricing",
+                      "question": "What does the free tier include versus Premium?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116157",
+                      "category": "Value",
+                      "question": "Is the pricing worth it for heavy daily use?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116158",
+                      "category": "Use Case Fit",
+                      "question": "How well does it handle technical or niche vocabulary?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116159",
+                      "category": "Language Support",
+                      "question": "Does it support languages beyond English sufficiently?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116160",
+                      "category": "Customization",
+                      "question": "Can I customize rules, tone, and style guides?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116161",
+                      "category": "Security",
+                      "question": "How private is my data and text content?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116162",
+                      "category": "Team Features",
+                      "question": "Can teams share style guides and terminology?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116163",
+                      "category": "Mobile",
+                      "question": "Does it work consistently on mobile keyboards?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116164",
+                      "category": "Editing Power",
+                      "question": "How helpful are the rewrite and clarity suggestions?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116165",
+                      "category": "Performance",
+                      "question": "Does it handle long-form documents without lag?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116166",
+                      "category": "Adoption",
+                      "question": "How easy is onboarding and browser extension setup?",
+                      "__typename": "ReviewQuestion"
+                  },
+                  {
+                      "id": "116167",
+                      "category": "Controls",
+                      "question": "Can I disable suggestions per app or site?",
+                      "__typename": "ReviewQuestion"
+                  }
+              ],
+              "detailedReview": null,
+              "reviewersCount": 57,
+              "firstPost": {
+                  "id": "3682",
+                  "createdAt": "2014-05-28T06:48:35-07:00",
+                  "__typename": "Post"
+              },
+              "cleanUrl": "grammarly.com",
+              "websiteUrl": "https://www.grammarly.com",
+              "canEdit": false,
+              "websiteDomain": "grammarly.com",
+              "isClaimed": true,
+              "canClaim": false,
+              "isViewerTeamMember": null,
+              "viewerPendingTeamRequest": null
+          },
+          "__typename": "Post",
+          "name": "Grammarly for Chrome",
+          "tagline": "Clear, effective, mistake-free writing everywhere you type.",
+          "isTopLaunch": false,
+          "createdAt": "2014-12-10T01:38:41-08:00",
+          "dailyRank": "1",
+          "featured": true,
+          "hideVotesCount": false,
+          "badges": {
+              "edges": [
+                  {
+                      "node": {
+                          "id": "7152",
+                          "post": {
+                              "id": "12079",
+                              "name": "Grammarly for Chrome",
+                              "__typename": "Post"
+                          },
+                          "position": 4,
+                          "period": "weekly",
+                          "date": "2014-12-10",
+                          "__typename": "TopPostBadge"
+                      },
+                      "__typename": "BadgeEdge"
+                  },
+                  {
+                      "node": {
+                          "id": "2103",
+                          "post": {
+                              "id": "12079",
+                              "name": "Grammarly for Chrome",
+                              "__typename": "Post"
+                          },
+                          "position": 1,
+                          "period": "daily",
+                          "date": "2014-12-10",
+                          "__typename": "TopPostBadge"
+                      },
+                      "__typename": "BadgeEdge"
+                  }
+              ],
+              "__typename": "Connection"
+          },
+          "thumbnailImageUuid": "fb536ff2-4cf3-4529-bd97-a69417952891.png",
+          "productState": "default",
+          "isAvailable": true,
+          "links": [
+              {
+                  "id": "14119",
+                  "redirectPath": "/r/c2d9525dfa",
+                  "storeName": "Website",
+                  "websiteName": "www.grammarly.com",
+                  "devices": [],
+                  "__typename": "ProductLink"
+              }
+          ],
+          "featuredAt": "2014-12-10T01:38:41-08:00",
+          "disabledWhenScheduled": true,
+          "embargoPreviewAt": null,
+          "latestScore": 334,
+          "launchDayScore": 0,
+          "hasVoted": false,
+          "updatedAt": "2025-11-20T12:42:25-08:00",
+          "description": null,
+          "pricingType": null,
+          "topics": {
+              "edges": [
+                  {
+                      "node": {
+                          "id": "34",
+                          "slug": "chrome-extensions",
+                          "name": "Chrome Extensions",
+                          "__typename": "Topic"
+                      },
+                      "__typename": "TopicEdge"
+                  },
+                  {
+                      "node": {
+                          "id": "90",
+                          "slug": "writing",
+                          "name": "Writing",
+                          "__typename": "Topic"
+                      },
+                      "__typename": "TopicEdge"
+                  },
+                  {
+                      "node": {
+                          "id": "352",
+                          "slug": "tech",
+                          "name": "Tech",
+                          "__typename": "Topic"
+                      },
+                      "__typename": "TopicEdge"
+                  }
+              ],
+              "__typename": "TopicConnection"
+          },
+          "promo": null,
+          "slug": "grammarly-for-chrome",
+          "isMaker": false,
+          "url": "https://www.producthunt.com/products/grammarly/launches/grammarly-for-chrome",
+          "user": {
+              "id": "1565",
+              "name": "Ria Blagburn",
+              "headline": "Head of Transformation, Vanti",
+              "username": "riaface",
+              "avatarUrl": "https://ph-avatars.imgix.net/1565/original.jpeg",
+              "__typename": "User"
+          },
+          "makers": [
+              {
+                  "id": "113281",
+                  "name": "max_lytvyn",
+                  "headline": "Co-founder, Grammarly",
+                  "username": "max_lytvyn",
+                  "avatarUrl": "https://ph-avatars.imgix.net/113281/original.jpeg",
+                  "__typename": "User"
+              },
+              {
+                  "id": "120750",
+                  "name": "Drew Price",
+                  "headline": "Head of Email at Grammarly",
+                  "username": "mrdrewprice",
+                  "avatarUrl": "https://ph-avatars.imgix.net/120750/original.jpeg",
+                  "__typename": "User"
+              }
+          ],
+          "detailedReviews": [],
+          "primaryLink": {
+              "id": "14119",
+              "url": "http://www.grammarly.com/chrome/chrome_plugin.html",
+              "__typename": "ProductLink"
+          },
+          "media": [
+              {
+                  "id": "180288",
+                  "imageUuid": "315b85af-4899-4f7e-9dd0-844371e7c50f.jpeg",
+                  "mediaType": "video",
+                  "originalWidth": 480,
+                  "originalHeight": 270,
+                  "metadata": {
+                      "url": null,
+                      "platform": "youtube",
+                      "videoId": "wKxySjlEjAg",
+                      "thumbnailWidth": null,
+                      "thumbnailHeight": null,
+                      "__typename": "MediaMetadata",
+                      "interactiveDemoId": null,
+                      "interactiveDemoType": null
+                  },
+                  "__typename": "Media"
+              },
+              {
+                  "id": "180287",
+                  "imageUuid": "14633d5b-6744-4e00-acf0-55e7e05d6946.jpeg",
+                  "mediaType": "video",
+                  "originalWidth": 480,
+                  "originalHeight": 270,
+                  "metadata": {
+                      "url": null,
+                      "platform": "youtube",
+                      "videoId": "15NXrnyT2HM",
+                      "thumbnailWidth": null,
+                      "thumbnailHeight": null,
+                      "__typename": "MediaMetadata",
+                      "interactiveDemoId": null,
+                      "interactiveDemoType": null
+                  },
+                  "__typename": "Media"
+              }
+          ],
+          "ad1": {
+              "id": "1",
+              "subject": "Ghost",
+              "__typename": "GhostAd"
+          },
+          "ad2": {
+              "id": "1",
+              "subject": "Ghost",
+              "__typename": "GhostAd"
+          },
+          "weeklyRank": "4",
+          "commentsCount": 69,
+          "scheduledAt": "2014-12-10T01:38:41-08:00",
+          "launchState": "featured",
+          "canManage": false,
+          "canDeputyManage": false,
+          "targetedAd": {
+              "id": "1",
+              "subject": "Ghost",
+              "__typename": "GhostAd"
+          },
+          "moderationReason": null,
+          "isHunter": false,
+          "redirectToProduct": {
+              "id": "111459",
+              "slug": "grammarly",
+              "__typename": "Product"
+          },
+          "meta": {
+              "title": "Grammarly for Chrome - Clear, effective, mistake-free writing everywhere you type",
+              "__typename": "MetaTags"
+          }
+      }
+  }
+}

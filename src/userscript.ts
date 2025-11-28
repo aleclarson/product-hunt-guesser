@@ -4,6 +4,7 @@ import { getWeek } from "date-fns";
 type HomefeedItem = {
   slug: string;
   product: { slug: string };
+  createdAt?: string | null;
 };
 
 type CacheEntry = {
@@ -16,11 +17,29 @@ type GuessOption = {
   isCorrect: boolean;
 };
 
+type PostMedia = {
+  mediaType?: string | null;
+  imageUuid?: string | null;
+  metadata?: {
+    url?: string | null;
+    platform?: string | null;
+    videoId?: string | null;
+  } | null;
+};
+
+type PostData = {
+  createdAt?: string | null;
+  latestScore?: number | null;
+  media?: PostMedia[] | null;
+};
+
 const STORE_NAME = "product-hunt-guesser";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const GRAPHQL_URL = "https://www.producthunt.com/frontend/graphql";
 const LEADERBOARD_HASH =
   "74a5405972fc0b6a8e704d6970968116d8fb6021db27d95bad59f376bbba12d4";
+const POST_PAGE_HASH =
+  "d48f40fb736509646479be6d1255e8d84ca18bb0f49ee9705d1b93b84b357df8";
 const RANGE_DEFINITIONS = [
   { min: 0, max: 20 },
   { min: 21, max: 60 },
@@ -42,6 +61,34 @@ let hoverOverlay: {
 const numberFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 0,
 });
+
+const launchTimestampFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+});
+
+function extractLaunchPath(url: string) {
+  const match = url.match(
+    /producthunt\.com\/products\/([^/]+)\/launches\/([^/?#]+)/
+  );
+  if (!match) return null;
+  return { productSlug: match[1], launchSlug: match[2] };
+}
+
+function formatLaunchTimestamp(isoString: string) {
+  const parsed = new Date(isoString);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return launchTimestampFormatter.format(parsed);
+}
+
+function resolveMediaVideoUrl(media?: PostMedia) {
+  if (!media || media.mediaType !== "video") return null;
+  const metadata = media.metadata;
+  if (metadata?.url) return metadata.url;
+  if (metadata?.platform === "youtube" && metadata.videoId) {
+    return `https://www.youtube.com/watch?v=${metadata.videoId}`;
+  }
+  return null;
+}
 
 function whenReady(cb: () => void | Promise<void>) {
   if (
@@ -113,7 +160,7 @@ function startHidingPostItems() {
 }
 
 function isLaunchPage(url: string): boolean {
-  return /producthunt\.com\/products\/[^/]+\/launches\/[^/]+/.test(url);
+  return Boolean(extractLaunchPath(url));
 }
 
 function removeNodesFromHere(node: Element | null) {
@@ -152,10 +199,13 @@ function ensureHoverOverlay() {
   return hoverOverlay;
 }
 
-function showHoverOverlay(src: string) {
-  const { container, image } = ensureHoverOverlay();
-  image.src = src;
-  container.style.display = "flex";
+function showHoverOverlay(media: PostMedia) {
+  const src = getUpgradedImageSrc(media);
+  if (src) {
+    const { container, image } = ensureHoverOverlay();
+    image.src = src;
+    container.style.display = "flex";
+  }
 }
 
 function hideHoverOverlay() {
@@ -164,31 +214,56 @@ function hideHoverOverlay() {
   hoverOverlay.container.style.display = "none";
 }
 
-function upgradeImageSrc(src: string) {
+function getUpgradedImageSrc(media: PostMedia) {
+  if (!media.imageUuid) return null;
   try {
-    const url = new URL(src, window.location.href);
-    url.searchParams.set("w", "1100");
-    url.searchParams.set("h", "658");
-    url.searchParams.set("dpr", "2");
+    const url = new URL(
+      `https://ph-files.imgix.net/0000.jpeg?auto=compress&codec=mozjpeg&cs=strip&auto=format&w=1100&h=658&fit=max&frame=1&dpr=2`
+    );
+    url.pathname = `/${media.imageUuid}`;
     return url.toString();
   } catch {
-    return src;
+    return null;
   }
 }
 
-function enhanceSnapImages() {
-  const images =
-    document.querySelectorAll<HTMLImageElement>("section.snap-x img");
-  images.forEach((img) => {
-    if (img.dataset.phgEnhanced === "1") return;
-    const upgraded = upgradeImageSrc(img.currentSrc || img.src);
-    if (upgraded) {
-      img.src = upgraded;
+function enhanceSnapImages(mediaItems?: PostMedia[]) {
+  if (!mediaItems?.length) return;
+
+  // Sort videos before images.
+  mediaItems.sort((a, b) => {
+    if (a.mediaType === "video") return -1;
+    if (b.mediaType === "video") return 1;
+    return 0;
+  });
+
+  const mediaElements = document.querySelectorAll<
+    HTMLImageElement | HTMLVideoElement
+  >("section.snap-x img, section.snap-x video");
+
+  mediaElements.forEach((element, index) => {
+    if (element.dataset.phgEnhanced === "1") return;
+
+    const media = mediaItems[index];
+    const isVideo = media?.mediaType === "video";
+    const videoUrl = resolveMediaVideoUrl(media);
+
+    if (isVideo && videoUrl) {
+      const videoButton = element.closest(".cursor-pointer") as HTMLDivElement;
+      videoButton.addEventListener(
+        "click",
+        (event) => {
+          event.stopImmediatePropagation();
+          window.open(videoUrl, "_blank", "noopener");
+        },
+        { capture: true }
+      );
+    } else if (media) {
+      element.addEventListener("mouseenter", () => showHoverOverlay(media));
+      element.addEventListener("mouseleave", () => hideHoverOverlay());
     }
 
-    img.addEventListener("mouseenter", () => showHoverOverlay(upgraded));
-    img.addEventListener("mouseleave", () => hideHoverOverlay());
-    img.dataset.phgEnhanced = "1";
+    element.dataset.phgEnhanced = "1";
   });
 }
 
@@ -537,7 +612,12 @@ async function fetchLeaderboardPage(year: number, week: number, page: number) {
       .map((edge) => edge?.node)
       .filter((node): node is HomefeedItem =>
         Boolean(node?.slug && node?.product?.slug)
-      );
+      )
+      .map((node) => ({
+        slug: node.slug,
+        product: { slug: node.product.slug },
+        createdAt: node.createdAt ?? null,
+      }));
 
     if (currentPage === targetPage) {
       lastItems = pageItems;
@@ -557,6 +637,40 @@ async function fetchLeaderboardPage(year: number, week: number, page: number) {
   return lastItems;
 }
 
+async function fetchPostPage(slug: string) {
+  const variables = { slug };
+  const params = new URLSearchParams({
+    operationName: "PostPage",
+    variables: JSON.stringify(variables),
+    extensions: JSON.stringify({
+      persistedQuery: { version: 1, sha256Hash: POST_PAGE_HASH },
+    }),
+  });
+
+  const response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, {
+    method: "GET",
+    credentials: "include",
+    headers: { accept: "*/*" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Post request failed with ${response.status}`);
+  }
+
+  const payload = (await response.json()) as {
+    data?: { post?: PostData | null };
+  };
+
+  const post = payload.data?.post;
+  if (!post) return null;
+
+  return {
+    createdAt: post.createdAt ?? null,
+    latestScore: typeof post.latestScore === "number" ? post.latestScore : null,
+    media: Array.isArray(post.media) ? post.media : [],
+  };
+}
+
 function randomInt(min: number, max: number) {
   const minInt = Math.ceil(min);
   const maxInt = Math.floor(max);
@@ -565,6 +679,11 @@ function randomInt(min: number, max: number) {
 
 async function preparePage() {
   try {
+    const launchPath = extractLaunchPath(window.location.href);
+    if (!launchPath) return;
+
+    const postDataPromise = fetchPostPage(launchPath.launchSlug);
+
     const archivedSection = await waitForElement(
       'section[data-test="post-archived-review-card"]',
       15000
@@ -584,21 +703,43 @@ async function preparePage() {
       return;
     }
 
-    const latestScore = +voteButton.textContent.replace(/\D/g, "");
-    if (Number.isNaN(latestScore)) {
-      console.warn("[ProductHuntGuesser] Unable to parse latest score.");
+    let postData: PostData | null = null;
+    try {
+      postData = await postDataPromise;
+    } catch (error) {
+      console.error("[ProductHuntGuesser] Failed to fetch post data", error);
+      return;
+    }
+
+    if (!postData || typeof postData.latestScore !== "number") {
+      console.warn("[ProductHuntGuesser] Missing latest score from post data.");
       return;
     }
 
     // Makers often buy fake votes. Subtract 25 to better reflect the actual score.
-    const adjustedScore = latestScore > 25 ? latestScore - 25 : latestScore;
+    const adjustedScore =
+      postData.latestScore > 25
+        ? postData.latestScore - 25
+        : postData.latestScore;
 
     const guessUI = buildGuessUI(adjustedScore);
     archivedSection.before(guessUI);
 
+    const formattedCreatedAt =
+      postData.createdAt && formatLaunchTimestamp(postData.createdAt);
+    if (formattedCreatedAt) {
+      const createdAtSpan = document.createElement("span");
+      createdAtSpan.textContent = formattedCreatedAt;
+      createdAtSpan.className =
+        "text-18 font-normal text-dark-gray text-gray-700";
+      createdAtSpan.style.display = "inline-block";
+      createdAtSpan.style.marginRight = "8px";
+      voteButton.before(createdAtSpan);
+    }
+
     voteButton.remove();
     removeNodesFromHere(archivedSection);
-    enhanceSnapImages();
+    enhanceSnapImages(postData.media ?? undefined);
     removeBadgeImages();
   } finally {
     pageReady = true;
